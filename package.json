@@ -1,0 +1,31 @@
+{
+  "name": "agent-forge-os",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Local-first AI agent workflow platform with DSL, runtime, tools, RAG, evals, traces, and web console.",
+  "bin": {
+    "agent-forge": "./bin/agent-forge.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "demo": "node bin/agent-forge.js run examples/workflows/release-note.agent.yml",
+    "eval": "node bin/agent-forge.js eval examples/evals/release-note.eval.json",
+    "console": "node bin/agent-forge.js console"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "workflow",
+    "rag",
+    "evals",
+    "local-first",
+    "llm",
+    "automation",
+    "developer-tools"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
+
