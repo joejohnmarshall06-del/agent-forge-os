@@ -2,8 +2,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { createConsoleServer } from "../src/server/console-server.js";
+import { runBenchmark } from "../src/bench/runner.js";
 import { runEvalFile } from "../src/evals/runner.js";
+import { loadPlugins } from "../src/plugins/loader.js";
 import { runWorkflowFile } from "../src/core/runtime.js";
+import { loadWorkflow } from "../src/core/workflow.js";
+import { summarizeTrace } from "../src/tracing/trace-utils.js";
 
 const args = process.argv.slice(2);
 const command = args[0] || "help";
@@ -31,6 +35,14 @@ async function main() {
     return;
   }
 
+  if (command === "validate") {
+    const file = args[1];
+    if (!file) throw new Error("Usage: agent-forge validate <workflow.agent.yml>");
+    const workflow = await loadWorkflow(resolve(file));
+    console.log(`valid ${workflow.name}`);
+    return;
+  }
+
   if (command === "trace") {
     const file = args[1];
     if (!file) throw new Error("Usage: agent-forge trace <workflow.agent.yml> [--out trace.json]");
@@ -39,6 +51,29 @@ async function main() {
     await mkdir(dirname(out), { recursive: true });
     await writeFile(out, `${JSON.stringify(result.trace, null, 2)}\n`, "utf8");
     console.log(`Trace written to ${out}`);
+    return;
+  }
+
+  if (command === "trace-summary") {
+    const file = args[1];
+    if (!file) throw new Error("Usage: agent-forge trace-summary <trace.json>");
+    console.log(summarizeTrace(JSON.parse(await import("node:fs/promises").then((fs) => fs.readFile(resolve(file), "utf8")))));
+    return;
+  }
+
+  if (command === "plugins") {
+    const dir = args[1] || "examples/plugins";
+    const plugins = await loadPlugins(resolve(dir));
+    console.log(JSON.stringify(plugins, null, 2));
+    return;
+  }
+
+  if (command === "bench") {
+    const workflow = args[1];
+    if (!workflow) throw new Error("Usage: agent-forge bench <workflow.agent.yml> [--runs 50]");
+    const runs = Number(readFlag("--runs") || 50);
+    const report = await runBenchmark(resolve(workflow), { runs });
+    console.log(JSON.stringify(report, null, 2));
     return;
   }
 
@@ -77,7 +112,11 @@ function printHelp() {
 Usage:
   agent-forge run <workflow.agent.yml>
   agent-forge eval <dataset.json>
+  agent-forge validate <workflow.agent.yml>
   agent-forge trace <workflow.agent.yml> [--out trace.json]
+  agent-forge trace-summary <trace.json>
+  agent-forge plugins [plugin-dir]
+  agent-forge bench <workflow.agent.yml> [--runs 50]
   agent-forge console [--port 4222]
 `);
 }
