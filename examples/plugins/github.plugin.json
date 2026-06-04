@@ -1,0 +1,15 @@
+{
+  "name": "github",
+  "version": "0.1.0",
+  "description": "Example plugin manifest for future GitHub issue, PR, and release tools.",
+  "tools": [
+    {
+      "name": "github.createIssue",
+      "input": {
+        "title": "string",
+        "body": "string"
+      }
+    }
+  ]
+}
+
