@@ -1,0 +1,23 @@
+name: Release Note Agent
+description: Drafts grounded release notes from local project context.
+model: deterministic
+knowledge:
+  - ../knowledge/release-policy.md
+steps:
+  - id: retrieve
+    uses: rag.search
+    with:
+      query: release checklist changelog version migration rollback
+      topK: 3
+  - id: draft
+    uses: llm.complete
+    with:
+      prompt: Write a release note using retrieved context.
+  - id: score
+    uses: eval.contains
+    with:
+      phrases:
+        - changelog
+        - version
+        - migration
+
