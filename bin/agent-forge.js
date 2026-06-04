@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { resolve } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { createConsoleServer } from "../src/server/console-server.js";
 import { runEvalFile } from "../src/evals/runner.js";
 import { runWorkflowFile } from "../src/core/runtime.js";
@@ -27,6 +28,17 @@ async function main() {
     const report = await runEvalFile(resolve(file));
     console.log(formatEval(report));
     process.exitCode = report.score >= 85 ? 0 : 1;
+    return;
+  }
+
+  if (command === "trace") {
+    const file = args[1];
+    if (!file) throw new Error("Usage: agent-forge trace <workflow.agent.yml> [--out trace.json]");
+    const result = await runWorkflowFile(resolve(file));
+    const out = resolve(readFlag("--out") || `traces/${safeName(result.workflow.name)}-${Date.now()}.json`);
+    await mkdir(dirname(out), { recursive: true });
+    await writeFile(out, `${JSON.stringify(result.trace, null, 2)}\n`, "utf8");
+    console.log(`Trace written to ${out}`);
     return;
   }
 
@@ -65,12 +77,16 @@ function printHelp() {
 Usage:
   agent-forge run <workflow.agent.yml>
   agent-forge eval <dataset.json>
+  agent-forge trace <workflow.agent.yml> [--out trace.json]
   agent-forge console [--port 4222]
 `);
+}
+
+function safeName(value) {
+  return String(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "workflow";
 }
 
 main().catch((error) => {
   console.error(error.message);
   process.exitCode = 1;
 });
-
