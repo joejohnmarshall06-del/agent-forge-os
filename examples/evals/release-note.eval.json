@@ -1,0 +1,10 @@
+{
+  "cases": [
+    {
+      "id": "release-note-grounding",
+      "workflow": "examples/workflows/release-note.agent.yml",
+      "mustContain": ["version", "changelog", "migration", "rollback"]
+    }
+  ]
+}
+
