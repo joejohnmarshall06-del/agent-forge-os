@@ -1,9 +1,9 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { extname, join } from "node:path";
+import { extname, join, normalize, resolve, sep } from "node:path";
 
 export async function createConsoleServer({ port = 4222 } = {}) {
-  const root = join(process.cwd(), "web");
+  const root = resolve(process.cwd(), "web");
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, `http://localhost:${port}`);
     const path = url.pathname === "/" ? "/index.html" : url.pathname;
@@ -14,7 +14,13 @@ export async function createConsoleServer({ port = 4222 } = {}) {
     }
 
     try {
-      const file = await readFile(join(root, path));
+      const filePath = safeStaticPath(root, path);
+      if (!filePath) {
+        res.writeHead(403);
+        res.end("Forbidden");
+        return;
+      }
+      const file = await readFile(filePath);
       res.writeHead(200, { "content-type": contentType(path) });
       res.end(file);
     } catch {
@@ -25,6 +31,17 @@ export async function createConsoleServer({ port = 4222 } = {}) {
 
   await new Promise((resolve) => server.listen(port, resolve));
   return { server, port };
+}
+
+export function safeStaticPath(root, requestPath) {
+  const decoded = decodeURIComponent(requestPath);
+  const segments = decoded.split(/[\\/]+/);
+  if (segments.includes("..")) {
+    return null;
+  }
+  const normalized = normalize(decoded).replace(/^([/\\])+/, "");
+  const candidate = resolve(root, normalized);
+  return candidate === root || candidate.startsWith(`${root}${sep}`) ? candidate : null;
 }
 
 function sendJson(res, body) {
@@ -38,4 +55,3 @@ function contentType(path) {
   if (ext === ".js") return "text/javascript";
   return "text/html";
 }
-
