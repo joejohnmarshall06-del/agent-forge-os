@@ -1,13 +1,18 @@
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { runWorkflowFile } from "../core/runtime.js";
 
 export async function runEvalFile(path) {
-  const dataset = JSON.parse(await readFile(path, "utf8"));
+  const datasetPath = resolve(path);
+  const dataset = JSON.parse(await readFile(datasetPath, "utf8"));
+  const datasetDir = dirname(datasetPath);
   const cases = [];
 
   for (const item of dataset.cases) {
-    const run = await runWorkflowFile(resolve(item.workflow));
+    const workflowPath = isAbsolute(item.workflow)
+      ? item.workflow
+      : resolve(datasetDir, item.workflow);
+    const run = await runWorkflowFile(workflowPath);
     const outputText = JSON.stringify(run.outputs).toLowerCase();
     const missing = item.mustContain.filter((phrase) => !outputText.includes(phrase.toLowerCase()));
     cases.push({
@@ -25,4 +30,3 @@ export async function runEvalFile(path) {
     cases
   };
 }
-
