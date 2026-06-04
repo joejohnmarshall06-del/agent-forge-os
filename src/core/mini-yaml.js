@@ -3,7 +3,8 @@ export function parseMiniYaml(source) {
   const root = {};
   const stack = [{ indent: -1, value: root }];
 
-  for (const raw of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const raw = lines[lineIndex];
     if (!raw.trim() || raw.trim().startsWith("#")) continue;
     const indent = raw.match(/^ */)[0].length;
     const text = raw.trim();
@@ -22,7 +23,7 @@ export function parseMiniYaml(source) {
 
     const [key, rest] = splitKeyValue(text);
     if (rest === "") {
-      const next = peekNextMeaningful(lines, lines.indexOf(raw) + 1);
+      const next = peekNextMeaningful(lines, lineIndex + 1);
       const value = next?.trim().startsWith("- ") ? [] : {};
       parent[key] = value;
       stack.push({ indent, value });
@@ -58,4 +59,3 @@ function peekNextMeaningful(lines, start) {
   }
   return null;
 }
-
