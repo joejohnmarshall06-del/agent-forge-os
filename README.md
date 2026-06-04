@@ -51,8 +51,12 @@ Agent Forge OS is shaped around that pattern.
 npm test
 npm run demo
 node bin/agent-forge.js run examples/workflows/release-note.agent.yml
+node bin/agent-forge.js validate examples/workflows/release-note.agent.yml
 node bin/agent-forge.js eval examples/evals/release-note.eval.json
 node bin/agent-forge.js trace examples/workflows/release-note.agent.yml --out traces/release-note.json
+node bin/agent-forge.js trace-summary traces/release-note.json
+node bin/agent-forge.js plugins
+node bin/agent-forge.js bench examples/workflows/release-note.agent.yml --runs 25
 node bin/agent-forge.js console
 ```
 
@@ -67,7 +71,11 @@ http://localhost:4222
 ```text
 agent-forge run <workflow.agent.yml>
 agent-forge eval <dataset.json>
+agent-forge validate <workflow.agent.yml>
 agent-forge trace <workflow.agent.yml> [--out trace.json]
+agent-forge trace-summary <trace.json>
+agent-forge plugins [plugin-dir]
+agent-forge bench <workflow.agent.yml> [--runs 50]
 agent-forge console [--port 4222]
 ```
 
