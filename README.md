@@ -52,6 +52,7 @@ npm test
 npm run demo
 node bin/agent-forge.js run examples/workflows/release-note.agent.yml
 node bin/agent-forge.js eval examples/evals/release-note.eval.json
+node bin/agent-forge.js trace examples/workflows/release-note.agent.yml --out traces/release-note.json
 node bin/agent-forge.js console
 ```
 
@@ -66,7 +67,7 @@ http://localhost:4222
 ```text
 agent-forge run <workflow.agent.yml>
 agent-forge eval <dataset.json>
-agent-forge trace <trace.json>
+agent-forge trace <workflow.agent.yml> [--out trace.json]
 agent-forge console [--port 4222]
 ```
 
@@ -145,4 +146,3 @@ This is the kind of project that can support deep engineering discussion:
 ## License
 
 MIT
-
